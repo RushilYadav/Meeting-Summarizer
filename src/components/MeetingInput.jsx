@@ -17,22 +17,32 @@ export default function MeetingInput() {
     setTasks([]);
 
     try {
+      let transcriptToUse = text;
+
+      // If user uploaded an audio file, send it to /transcribe first
+      if (audioFile) {
+        const formData = new FormData();
+        formData.append("audio", audioFile);
+
+        const transcribeResponse = await fetch("http://localhost:5000/transcribe", {
+          method: "POST",
+          body: formData,
+        });
+
+        const transcribeData = await transcribeResponse.json();
+        transcriptToUse = transcribeData.transcript;
+      }
+
+      // Send transcript to /summarize
       const response = await fetch("http://localhost:5000/summarize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transcript: text })
+        body: JSON.stringify({ transcript: transcriptToUse })
       });
 
       const data = await response.json();
-      //test:
-      console.log("AI response:", data);
       setSummary(data.summary);
-
-      // Example: parse tasks from AI output if available
-      setTasks([
-        { id: 1, text: "Example task from AI", date: "2025-08-30", selected: false },
-        { id: 2, text: "Follow up with client", date: "2025-09-01", selected: false },
-      ]);
+      setTasks(data.tasks);
 
     } catch (error) {
       console.error(error);

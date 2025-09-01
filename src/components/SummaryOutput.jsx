@@ -1,4 +1,4 @@
-export default function SummaryOutput({ summary, tasks, setTasks }) {
+export default function SummaryOutput({ summary, tasks = [], setTasks }) {
   // Toggle task selection
   const handleTaskToggle = (id) => {
     setTasks((prevTasks) =>
